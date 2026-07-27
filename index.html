@@ -33,7 +33,7 @@
 <header class="site-header">
   <div class="wrap">
     <p class="eyebrow">ஜோதிடம் &middot; ஜாதகம்</p>
-    <h1>உங்கள் ஜாதகத்தை உருவாக்குங்கள்</h1>
+    <h1>நந்தினி ஜோதிட நிலையம்</h1>
     <p class="subtitle">பிறந்த தேதி, நேரம் மற்றும் ஊரை உள்ளிடவும் &mdash; லாகிரி அயனாம்சப்படி, தென் இந்திய அல்லது வட இந்திய முறையில் உங்கள் ராசி ஜாதகம் உடனடியாக உருவாகும்.</p>
   </div>
 </header>
@@ -157,13 +157,37 @@
 
     <p class="summary-line" id="rashi-note"></p>
 
+    <div class="pdf-action">
+      <button type="button" id="download-pdf-btn" class="btn-secondary">PDF ஆக பதிவிறக்கம் செய்ய</button>
+      <p id="pdf-status" class="pdf-status" hidden></p>
+    </div>
+
     <p class="disclaimer">லாகிரி (சித்திரபட்சம்) அயனாம்சப்படி நிரயண கிரக நிலைகள் கணக்கிடப்பட்டுள்ளன. ராகு/கேது சராசரி பாதைக் கணக்கின்படி (mean node) தரப்பட்டுள்ளன. இது பாரம்பரிய படிப்பு &amp; தகவல் நோக்கத்திற்கானது மட்டுமே.</p>
   </section>
 
 </main>
 
 <footer class="site-footer">
-  <p>உங்கள் பிறப்பு விவரங்கள் எங்கும் அனுப்பப்படாமல், உங்கள் உலாவியிலேயே கணக்கிடப்படுகின்றன.</p>
+  <div class="wrap footer-grid">
+    <div class="footer-col">
+      <h4>தொடர்பு</h4>
+      <p class="footer-heading">ஜோதிடத்திற்கு தொடர்பு கொள்ள:</p>
+      <ul class="footer-list">
+        <li><span class="footer-label">பெயர்</span> கல்யாண சுந்தரம்</li>
+        <li><span class="footer-label">முகவரி</span> தண்டபாணி கோவில் தெரு, திருப்பத்தூர் - 635601</li>
+        <li><span class="footer-label">தொலைபேசி</span> <a href="tel:+919751570333">+91-9751570333</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>சேவைகள்</h4>
+      <ul class="footer-list footer-services">
+        <li>1. திருமணத்திற்கான ஜாதக பொருத்தம் பார்த்தல்</li>
+        <li>2. ஜாதகம் மற்றும் வாழ்க்கை பலன்கள் கணிப்பு</li>
+        <li>3. நிகழ்ச்சிகள் / வைபவங்களுக்கு நல்ல நாள், நேரம் பார்த்தல்</li>
+      </ul>
+    </div>
+  </div>
+  <p class="footer-note">உங்கள் பிறப்பு விவரங்கள் எங்கும் அனுப்பப்படாமல், உங்கள் உலாவியிலேயே கணக்கிடப்படுகின்றன.</p>
 </footer>
 
 <script src="js/astronomy.min.js"></script>
@@ -172,6 +196,9 @@
 <script src="js/vedic-calc.js"></script>
 <script src="js/chart-render.js"></script>
 <script src="js/place-picker.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js"></script>
+<script src="js/pdf-export.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

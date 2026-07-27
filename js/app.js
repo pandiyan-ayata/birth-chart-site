@@ -16,6 +16,9 @@
   var latInput = document.getElementById("latitude");
   var lonInput = document.getElementById("longitude");
   var tzInput = document.getElementById("timezone");
+  var downloadPdfBtn = document.getElementById("download-pdf-btn");
+  var pdfStatus = document.getElementById("pdf-status");
+  var lastName = "நபர்";
 
   var lastChart = null;
 
@@ -134,6 +137,19 @@
     r.addEventListener("change", drawCharts);
   });
 
+  downloadPdfBtn.addEventListener("click", function () {
+    if (!lastChart) return;
+    downloadPdfBtn.disabled = true;
+    var safeName = (lastName || "jathagam").replace(/[^a-zA-Z0-9\u0B80-\u0BFF]+/g, "-");
+    window.PdfExport.exportResultToPdf({
+      resultSection: resultSection,
+      fileName: safeName + "-jathagam.pdf",
+      statusEl: pdfStatus
+    }).then(function () {
+      downloadPdfBtn.disabled = false;
+    });
+  });
+
   function addDetailRow(label, value) {
     var row = document.createElement("tr");
     row.innerHTML = "<th>" + label + "</th><td>" + value + "</td>";
@@ -142,6 +158,7 @@
 
   function renderResult(name, birth, chart) {
     resultName.textContent = name;
+    lastName = name;
     var VD = window.VedicData;
 
     var monthName = monthNames[birth.month - 1];

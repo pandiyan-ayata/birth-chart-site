@@ -4,7 +4,9 @@ A fully static, Tamil-language website that generates a Vedic (sidereal)
 birth chart from a date, time and place of birth — rendered as a South
 Indian or North Indian style Rasi chart, with all labels, form fields and
 results in Tamil. Everything runs client-side in the browser; no server,
-build step, database, or API key is required.
+build step, database, or API key is required (the page does load Google
+Fonts and the PDF-export libraries from public CDNs at runtime, same as any
+static site — nothing to configure or pay for).
 
 ## What it computes
 
@@ -97,6 +99,34 @@ browsers, since everything is plain script tags with no bundler.)
 
 No environment variables, secrets, or build actions are needed since it's a
 plain static site.
+
+## Branding & contact footer
+
+- The page header now reads **நந்தினி ஜோதிட நிலையம்** (Nandhini Jodhida
+  Nilayam) instead of a generic tool title.
+- The footer has two columns: **தொடர்பு** (contact details — Kalyana
+  Sundaram, Dhandapani Kovil Street, Thirupattur - 635601, phone as a
+  tappable `tel:` link) and **சேவைகள்** (the three services offered:
+  marriage horoscope matching, horoscope/life predictions, and auspicious
+  date/time selection for events).
+
+## PDF download
+
+Once a chart is generated, a "PDF ஆக பதிவிறக்கம் செய்ய" button appears below
+it. Clicking it (`js/pdf-export.js`):
+
+1. Builds an off-screen copy of the page **header + full results (details
+   table, graha table, dasha line, both Rasi/Navamsa charts) + footer**.
+2. Renders that to an image with [html2canvas](https://html2canvas.hertzen.com/)
+   and lays it into an A4 PDF with [jsPDF](https://github.com/parallax/jsPDF)
+   (paginating automatically if the content is taller than one page).
+3. Triggers a normal browser download of the finished file (named after the
+   person, e.g. `Monica-jathagam.pdf`) straight to the device — no server
+   round-trip.
+
+Both libraries are loaded from a CDN (jsDelivr) in `index.html`; if the
+device is offline when the button is pressed, a Tamil error message explains
+that the PDF tool couldn't load rather than failing silently.
 
 ## Place-of-birth search
 
