@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ஜாதகம் &mdash; ராசி பலன் கணிப்பான்</title>
+<meta name="description" content="தென் இந்திய அல்லது வட இந்திய முறையில், முழுவதும் தமிழில் இலவச ஜாதகம் (ராசி கட்டம்) உருவாக்குங்கள் &mdash; உங்கள் உலாவியிலேயே கணக்கிடப்படுகிறது.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tamil:wght@500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="sky" aria-hidden="true">
+  <svg class="sky-glyphs" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid slice">
+    <circle cx="120" cy="60" r="1.4" class="star"></circle>
+    <circle cx="260" cy="120" r="1" class="star"></circle>
+    <circle cx="400" cy="40" r="1.7" class="star"></circle>
+    <circle cx="540" cy="150" r="1.1" class="star"></circle>
+    <circle cx="700" cy="70" r="1.4" class="star"></circle>
+    <circle cx="860" cy="130" r="1" class="star"></circle>
+    <circle cx="990" cy="50" r="1.6" class="star"></circle>
+    <circle cx="1120" cy="110" r="1.1" class="star"></circle>
+    <circle cx="60" cy="200" r="1" class="star"></circle>
+    <circle cx="330" cy="230" r="1.3" class="star"></circle>
+    <circle cx="620" cy="220" r="1" class="star"></circle>
+    <circle cx="950" cy="240" r="1.4" class="star"></circle>
+  </svg>
+</div>
+
+<header class="site-header">
+  <div class="wrap">
+    <p class="eyebrow">ஜோதிடம் &middot; ஜாதகம்</p>
+    <h1>உங்கள் ஜாதகத்தை உருவாக்குங்கள்</h1>
+    <p class="subtitle">பிறந்த தேதி, நேரம் மற்றும் ஊரை உள்ளிடவும் &mdash; லாகிரி அயனாம்சப்படி, தென் இந்திய அல்லது வட இந்திய முறையில் உங்கள் ராசி ஜாதகம் உடனடியாக உருவாகும்.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="panel form-panel" aria-labelledby="form-heading">
+    <h2 id="form-heading">பிறப்பு விவரங்கள்</h2>
+    <p class="hint">துல்லியமான ஜாதகத்திற்கு அனைத்து விவரங்களும் அவசியம்.</p>
+
+    <form id="birth-form" novalidate>
+
+      <div class="field">
+        <label for="name">பெயர்</label>
+        <input type="text" id="name" name="name" placeholder="உதா. கார்த்திக்" autocomplete="off">
+      </div>
+
+      <fieldset class="field-group">
+        <legend>பிறந்த தேதி</legend>
+        <div class="row three">
+          <div class="field">
+            <label for="dob-day">நாள்</label>
+            <select id="dob-day" required></select>
+          </div>
+          <div class="field">
+            <label for="dob-month">மாதம்</label>
+            <select id="dob-month" required></select>
+          </div>
+          <div class="field">
+            <label for="dob-year">ஆண்டு</label>
+            <select id="dob-year" required></select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="field-group">
+        <legend>பிறந்த நேரம்</legend>
+        <div class="row three">
+          <div class="field">
+            <label for="dob-hour">மணி</label>
+            <select id="dob-hour" required></select>
+          </div>
+          <div class="field">
+            <label for="dob-minute">நிமிடம்</label>
+            <select id="dob-minute" required></select>
+          </div>
+          <div class="field">
+            <span class="fake-label">முற்பகல் / பிற்பகல்</span>
+            <div class="radio-pair">
+              <label><input type="radio" name="ampm" value="AM" checked> முற்பகல்</label>
+              <label><input type="radio" name="ampm" value="PM"> பிற்பகல்</label>
+            </div>
+          </div>
+        </div>
+        <p class="hint small">பிறந்த ஊரில் பகலொளி சேமிப்பு நேரம் (DST) கடைபிடிக்கப்பட்டிருந்தால், அதைக் கணக்கில் கொள்ளாமல் நிலையான நேரத்தையே உள்ளிடவும்.</p>
+      </fieldset>
+
+      <fieldset class="field-group">
+        <legend>பிறந்த ஊர்</legend>
+        <div class="field">
+          <label for="place">ஊரைத் தேடத் தட்டச்சு செய்யவும், அல்லது கீழே கோ-ஆர்டினேட்களை நேரடியாக உள்ளிடவும்</label>
+          <input type="text" id="place" list="city-options" placeholder="ஊர் பெயரைத் தட்டச்சு செய்யத் தொடங்குங்கள்&hellip;" autocomplete="off">
+          <datalist id="city-options"></datalist>
+          <p class="hint small">தமிழ்நாடு &amp; தென் இந்திய ஊர்கள் பட்டியலில் உள்ளன. உங்கள் ஊர் இல்லையெனில், அதன் அட்சரேகை/தீர்க்கரேகையை நேரடியாக உள்ளிடலாம்.</p>
+        </div>
+
+        <div class="row three">
+          <div class="field">
+            <label for="latitude">அட்சரேகை (Latitude)</label>
+            <div class="inline-input">
+              <input type="number" id="latitude" min="0" max="90" step="0.0001" placeholder="உதா. 12.9716" required>
+              <div class="radio-pair">
+                <label><input type="radio" name="lat-dir" value="N" checked> வடக்கு</label>
+                <label><input type="radio" name="lat-dir" value="S"> தெற்கு</label>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="longitude">தீர்க்கரேகை (Longitude)</label>
+            <div class="inline-input">
+              <input type="number" id="longitude" min="0" max="180" step="0.0001" placeholder="உதா. 77.5946" required>
+              <div class="radio-pair">
+                <label><input type="radio" name="lon-dir" value="E" checked> கிழக்கு</label>
+                <label><input type="radio" name="lon-dir" value="W"> மேற்கு</label>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="timezone">நேர மண்டலம் (UTC ஈடு, நிலையான நேரம்)</label>
+            <input type="number" id="timezone" step="0.25" placeholder="உதா. 5.5" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <p id="form-error" class="form-error" role="alert" hidden></p>
+
+      <button type="submit" class="btn-primary">ஜாதகம் தயாரிக்க</button>
+    </form>
+  </section>
+
+  <section class="panel result-panel" id="result" hidden aria-labelledby="result-heading">
+    <div class="result-head">
+      <div>
+        <h2 id="result-heading"><span id="result-name">நபர்</span> அவர்களின் ஜாதகம்</h2>
+        <p class="result-meta" id="result-meta"></p>
+      </div>
+      <div class="style-toggle" role="radiogroup" aria-label="ஜாதக முறை">
+        <label><input type="radio" name="chart-style" value="south" checked> தென் இந்திய முறை</label>
+        <label><input type="radio" name="chart-style" value="north"> வட இந்திய முறை</label>
+      </div>
+    </div>
+
+    <div class="chart-frame">
+      <div id="chart-host" class="chart-host"></div>
+    </div>
+
+    <p class="summary-line" id="asc-summary"></p>
+    <p class="summary-line" id="moon-summary"></p>
+
+    <h3>கிரக நிலைகள்</h3>
+    <div class="table-wrap">
+      <table id="planet-table">
+        <thead>
+          <tr><th>கிரகம்</th><th>ராசி</th><th>பாகை</th><th>நட்சத்திரம்</th><th>பாதம்</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <p class="disclaimer">லாகிரி (சித்திரபட்சம்) அயனாம்சப்படி நிரயண கிரக நிலைகள் கணக்கிடப்பட்டுள்ளன. ராகு/கேது சராசரி பாதைக் கணக்கின்படி (mean node) தரப்பட்டுள்ளன. இது பாரம்பரிய படிப்பு &amp; தகவல் நோக்கத்திற்கானது மட்டுமே.</p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>உங்கள் பிறப்பு விவரங்கள் எங்கும் அனுப்பப்படாமல், உங்கள் உலாவியிலேயே கணக்கிடப்படுகின்றன.</p>
+</footer>
+
+<script src="js/astronomy.min.js"></script>
+<script src="js/cities.js"></script>
+<script src="js/vedic-data.js"></script>
+<script src="js/vedic-calc.js"></script>
+<script src="js/chart-render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
