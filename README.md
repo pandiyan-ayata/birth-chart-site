@@ -84,6 +84,23 @@ browsers, since everything is plain script tags with no bundler.)
 No environment variables, secrets, or build actions are needed since it's a
 plain static site.
 
+## Mobile support
+
+The layout is responsive down to small phone screens (~320px wide):
+
+- Form rows (date, time, coordinates) use a flexible grid that reflows to
+  fewer columns automatically as the screen narrows, instead of a fixed
+  breakpoint that could overflow with longer Tamil month/city names.
+- All inputs/selects use a 16px base font size so mobile browsers (iOS
+  Safari in particular) don't auto-zoom on focus, and use full available
+  width with safe minimum widths so nothing overflows the viewport.
+- The birth-chart SVG scales fluidly with the container (no fixed pixel
+  width), so it stays crisp and fully visible from small phones up to
+  desktop.
+- The graha-position table scrolls horizontally on very narrow screens
+  instead of squeezing/wrapping unreadably.
+- The "Generate" button is full-width on phones for an easier tap target.
+
 ## Notes on accuracy
 
 - Positions use apparent geocentric coordinates (true equinox of date) minus
