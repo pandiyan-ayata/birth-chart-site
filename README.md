@@ -30,8 +30,10 @@ Astronomical positions are computed with the open-source
 - Puducherry, Karaikal, Mahe, Yanam (Puducherry U.T.).
 - Major cities of Andhra Pradesh, Telangana, Karnataka and Kerala.
 
-If a birth place isn't in the list, the form lets you enter its latitude,
-longitude and standard UTC offset directly.
+If an exact birth place isn't in the list, pick the nearest listed town —
+manual latitude/longitude entry is intentionally no longer offered (see
+"Place-of-birth autocomplete" below), so a place must be selected from the
+search results to generate a chart.
 
 ## Files
 
@@ -88,21 +90,25 @@ plain static site.
 
 The city field (`js/place-picker.js`) is a custom autocomplete, not a native
 `<datalist>`, so it can search by the English spelling while still filling in
-the Tamil name:
+the Tamil name — and it now works identically on desktop and mobile as a
+single inline dropdown anchored directly under the field, so searching and
+selecting a result always stay on the same screen (no separate popup/sheet,
+no page scrolling required):
 
 - Type English letters (e.g. `che`) and it matches place names whose English
   spelling **starts with** what you typed first (Chennai, Chengalpattu,
-  Cheyyar, ...), with looser "contains" matches listed after.
-- A Tamil-script prefix also works, for people typing on a Tamil keyboard.
-- **Desktop**: results appear as a dropdown list under the field (arrow
-  keys + Enter to navigate, Escape or an outside click to dismiss).
-- **Mobile** (≤640px wide): tapping the field opens a full-screen overlay
-  ("bottom sheet") with its own search box and a scrollable result list,
-  instead of a cramped inline dropdown — closes via the ✕ button, tapping
-  outside the sheet, or Escape.
-
-Selecting any result fills the latitude/longitude/UTC-offset fields
-automatically; a place not in the list can still be entered manually.
+  Cheyyar, ...), with looser "contains" matches listed after. A Tamil-script
+  prefix also works for people typing on a Tamil keyboard.
+- Both the default suggestions (shown when the field is focused empty) and
+  every search result list are sorted alphabetically by English name.
+- Focusing the field with no text shows a short list of major cities so
+  there's always something to pick from immediately.
+- Arrow keys + Enter navigate the list; Escape or clicking outside closes it.
+- **Latitude and longitude are no longer visible form fields.** Selecting a
+  place fills them in behind the scenes (as hidden inputs) and shows a small
+  green confirmation line under the field instead; the time zone field
+  auto-fills too and is read-only. A place must be picked from the list to
+  submit the form — free-typed text alone won't compute a chart.
 
 ## Mobile support
 
@@ -131,11 +137,10 @@ The layout is responsive down to small phone screens (~320px wide):
 - Rahu/Ketu use the **mean** lunar node (the convention most commonly used in
   traditional Vedic astrology), not the oscillating "true" node.
 - The Ascendant formula assumes a birth time already converted to standard
-  (non-daylight-saving) local time, matched with the correct UTC offset —
-  this is why the form asks for the offset explicitly rather than relying on
-  a browser locale.
+  (non-daylight-saving) local time, matched with the correct UTC offset,
+  which is why the time-zone field is auto-filled from the selected city
+  rather than left to a browser locale guess.
 - City coordinates are curated to a few decimal degrees (roughly ±1 km),
   which is more than sufficient for chart accuracy. For a place not listed,
-  enter its latitude, longitude and standard UTC offset directly (look these
-  up from any map/geocoding service).
+  pick the nearest listed town.
 

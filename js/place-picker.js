@@ -1,22 +1,16 @@
-/* Place-of-birth autocomplete.
-   - Typing English letters filters CITY_LIST by English-name prefix
-     (falls back to Tamil-name prefix so a Tamil keyboard also works).
-   - On desktop: an inline dropdown appears under the input.
-   - On mobile (narrow screens): tapping the field opens a full-screen
-     overlay ("bottom sheet") with its own search box and result list,
-     which is easier to use than a cramped inline dropdown on a phone. */
+/* Place-of-birth autocomplete: a single inline dropdown that works the
+   same way on desktop and mobile, always anchored directly under the
+   field so search + results + selection all stay on the same screen
+   (no full-page overlay, no separate scroll). Typing English letters
+   filters CITY_LIST by English-name prefix (falls back to a Tamil-name
+   prefix so a Tamil keyboard also works); results are alphabetical. */
 (function (global) {
   "use strict";
 
-  var MOBILE_QUERY = "(max-width: 640px)";
   var DEFAULT_CITY_NAMES = [
     "Chennai", "Madurai", "Coimbatore", "Tiruchirappalli", "Salem",
     "Vellore", "Thanjavur", "Tirunelveli", "Puducherry", "Bengaluru"
   ];
-
-  function isMobile() {
-    return global.matchMedia && global.matchMedia(MOBILE_QUERY).matches;
-  }
 
   function byEnglishName(a, b) {
     return a.en.localeCompare(b.en, "en", { sensitivity: "base" });
@@ -59,10 +53,7 @@
     var latInput = opts.latInput;
     var lonInput = opts.lonInput;
     var tzInput = opts.tzInput;
-    var overlay = opts.overlay;
-    var overlaySearch = opts.overlaySearch;
-    var overlayList = opts.overlayList;
-    var overlayClose = opts.overlayClose;
+    var resolvedCaption = opts.resolvedCaption;
 
     var activeIndex = -1;
 
@@ -71,20 +62,34 @@
       latInput.value = city.lat.toFixed(4);
       lonInput.value = city.lon.toFixed(4);
       tzInput.value = city.tz;
+      if (resolvedCaption) {
+        resolvedCaption.textContent =
+          "\u2713 " + city.ta + " (" + city.en + ") \u2014 " +
+          "அட்சரேகை " + city.lat.toFixed(2) + "\u00B0, தீர்க்கரேகை " + city.lon.toFixed(2) + "\u00B0, UTC+" + city.tz;
+        resolvedCaption.hidden = false;
+      }
       closeDropdown();
-      closeOverlay();
     }
 
-    function renderItems(container, cities, opts2) {
-      opts2 = opts2 || {};
-      container.innerHTML = "";
+    function clearResolved() {
+      latInput.value = "";
+      lonInput.value = "";
+      tzInput.value = "";
+      if (resolvedCaption) {
+        resolvedCaption.hidden = true;
+        resolvedCaption.textContent = "";
+      }
+    }
+
+    function renderItems(cities, emptyMessage) {
+      dropdown.innerHTML = "";
       activeIndex = -1;
       if (!cities.length) {
-        if (opts2.emptyMessage) {
+        if (emptyMessage) {
           var li = document.createElement("li");
           li.className = "place-empty";
-          li.textContent = opts2.emptyMessage;
-          container.appendChild(li);
+          li.textContent = emptyMessage;
+          dropdown.appendChild(li);
         }
         return;
       }
@@ -96,14 +101,17 @@
         btn.className = "place-option";
         btn.innerHTML = '<span class="place-ta">' + city.ta + '</span>' +
           '<span class="place-en">' + city.en + "</span>";
+        // Prevent the input from blurring before the click is handled -
+        // this was the root cause of "can't select after search".
+        btn.addEventListener("mousedown", function (e) { e.preventDefault(); });
         btn.addEventListener("click", function () { selectCity(city); });
         li.appendChild(btn);
-        container.appendChild(li);
+        dropdown.appendChild(li);
       });
     }
 
-    /* ---------- Desktop inline dropdown ---------- */
-    function openDropdown() {
+    function openDropdown(cities, emptyMessage) {
+      renderItems(cities, emptyMessage);
       dropdown.hidden = false;
       input.setAttribute("aria-expanded", "true");
     }
@@ -112,15 +120,26 @@
       input.setAttribute("aria-expanded", "false");
     }
 
+    function runSearch() {
+      var q = input.value.trim();
+      if (!q) {
+        openDropdown(defaultCities(), "");
+        return;
+      }
+      openDropdown(filterCities(q), "பொருந்தும் ஊர் இல்லை");
+    }
+
     input.addEventListener("input", function () {
-      if (isMobile()) return; // mobile uses the overlay instead
-      var matches = filterCities(input.value);
-      renderItems(dropdown, matches, { emptyMessage: "பொருந்தும் ஊர் இல்லை" });
-      if (input.value.trim()) openDropdown(); else closeDropdown();
+      // Any manual edit invalidates a previously resolved selection,
+      // since coordinates now only ever come from picking a city.
+      clearResolved();
+      runSearch();
     });
 
+    input.addEventListener("focus", runSearch);
+
     input.addEventListener("keydown", function (e) {
-      if (isMobile() || dropdown.hidden) return;
+      if (dropdown.hidden) return;
       var items = dropdown.querySelectorAll(".place-option");
       if (!items.length) return;
       if (e.key === "ArrowDown") {
@@ -154,44 +173,8 @@
       }
     });
 
-    /* ---------- Mobile full-screen overlay ---------- */
-    function openOverlay() {
-      overlay.hidden = false;
-      document.body.classList.add("place-overlay-open");
-      overlaySearch.value = "";
-      renderItems(overlayList, defaultCities(), { emptyMessage: "" });
-      window.setTimeout(function () { overlaySearch.focus(); }, 50);
-    }
-    function closeOverlay() {
-      overlay.hidden = true;
-      document.body.classList.remove("place-overlay-open");
-    }
-
-    input.addEventListener("focus", function () {
-      if (isMobile()) {
-        input.blur();
-        openOverlay();
-      }
-    });
-    input.addEventListener("click", function () {
-      if (isMobile() && overlay.hidden) openOverlay();
-    });
-
-    overlaySearch.addEventListener("input", function () {
-      var q = overlaySearch.value.trim();
-      var matches = q ? filterCities(q) : defaultCities();
-      renderItems(overlayList, matches, { emptyMessage: q ? "பொருந்தும் ஊர் இல்லை" : "" });
-    });
-
-    overlayClose.addEventListener("click", closeOverlay);
-    overlay.addEventListener("click", function (e) {
-      if (e.target === overlay) closeOverlay();
-    });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        if (!overlay.hidden) closeOverlay();
-        if (!dropdown.hidden) closeDropdown();
-      }
+      if (e.key === "Escape" && !dropdown.hidden) closeDropdown();
     });
   }
 

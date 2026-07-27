@@ -109,7 +109,6 @@ main.wrap {
   box-shadow: 0 30px 60px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,151,63,0.35);
   position: relative;
   max-width: 100%;
-  overflow: hidden;
 }
 .panel::before {
   content: "";
@@ -179,6 +178,11 @@ input:focus, select:focus {
   outline: 2px solid var(--rose);
   outline-offset: 1px;
 }
+input[readonly] {
+  background: #f1e9d2;
+  color: #6b6250;
+  cursor: not-allowed;
+}
 .inline-input { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
 .inline-input input { flex: 1 1 110px; min-width: 0; }
 .radio-pair {
@@ -206,8 +210,9 @@ input:focus, select:focus {
   border: 1px solid #cbb98c;
   border-radius: 8px;
   box-shadow: 0 18px 36px -12px rgba(0,0,0,0.35);
-  max-height: 300px;
+  max-height: min(300px, 50vh);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .place-option {
   display: flex;
@@ -230,70 +235,11 @@ input:focus, select:focus {
 .place-en { font-size: 0.78rem; color: #8a7c58; font-family: var(--mono); }
 .place-empty { padding: 10px; color: #8a7c58; font-size: 0.85rem; }
 
-/* Mobile full-screen place picker overlay */
-.place-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(15, 12, 6, 0.55);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-@media (min-width: 641px) {
-  .place-overlay { display: none !important; }
-}
-body.place-overlay-open { overflow: hidden; }
-
-.place-overlay-sheet {
-  width: 100%;
-  max-width: 560px;
-  max-height: 82vh;
-  background: var(--parchment);
-  border-radius: 18px 18px 0 0;
-  box-shadow: 0 -12px 40px rgba(0,0,0,0.4);
-  display: flex;
-  flex-direction: column;
-  padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
-  animation: sheet-up 0.22s ease-out;
-}
-@keyframes sheet-up {
-  from { transform: translateY(24px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-.place-overlay-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: var(--display);
-  font-size: 1.15rem;
-  color: var(--ink-on-parchment);
-  padding: 4px 2px 12px;
-}
-.place-overlay-header button {
-  background: none;
-  border: none;
-  font-size: 1.6rem;
-  line-height: 1;
-  color: #8a7c58;
-  cursor: pointer;
-  padding: 4px 8px;
-}
-.place-overlay-search {
-  width: 100%;
-  margin-bottom: 10px;
-}
-.place-overlay-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  flex: 1;
-}
-.place-overlay-list .place-option {
-  padding: 13px 10px;
-  border-bottom: 1px solid #e8dcb8;
+.place-resolved {
+  font-size: 0.85rem;
+  color: #3f6b46;
+  font-weight: 600;
+  margin: 8px 0 0;
 }
 
 .form-error {

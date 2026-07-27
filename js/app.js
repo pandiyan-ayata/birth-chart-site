@@ -50,17 +50,14 @@
   fillSelect(hourSel, 1, 12, false);
   fillSelect(minuteSel, 0, 59, true);
 
-  // Place-of-birth autocomplete (English-letter search, mobile overlay)
+  // Place-of-birth autocomplete (English-letter search, unified inline dropdown)
   window.PlacePicker.init({
     input: cityInput,
     dropdown: document.getElementById("place-dropdown"),
     latInput: latInput,
     lonInput: lonInput,
     tzInput: tzInput,
-    overlay: document.getElementById("place-overlay"),
-    overlaySearch: document.getElementById("place-overlay-search"),
-    overlayList: document.getElementById("place-overlay-list"),
-    overlayClose: document.getElementById("place-overlay-close")
+    resolvedCaption: document.getElementById("place-resolved")
   });
 
   function showError(msg) {
@@ -81,21 +78,15 @@
     var ampm = document.querySelector('input[name="ampm"]:checked').value;
     var lat = parseFloat(latInput.value);
     var lon = parseFloat(lonInput.value);
-    var latDir = document.querySelector('input[name="lat-dir"]:checked').value;
-    var lonDir = document.querySelector('input[name="lon-dir"]:checked').value;
     var tz = parseFloat(tzInput.value);
 
-    if (isNaN(lat) || isNaN(lon) || isNaN(tz)) {
-      showError("பிறந்த ஊரின் அட்சரேகை, தீர்க்கரேகை மற்றும் நேர மண்டல ஈடு ஆகியவற்றை உள்ளிடவும்.");
-      return;
-    }
-    if (lat < 0 || lat > 90 || lon < 0 || lon > 180) {
-      showError("அட்சரேகை 0-90 க்குள்ளும், தீர்க்கரேகை 0-180 க்குள்ளும் இருக்க வேண்டும். வடக்கு/தெற்கு, கிழக்கு/மேற்கு பொத்தான்களைப் பயன்படுத்தி திசையைத் தேர்ந்தெடுக்கவும்.");
+    if (!cityInput.value.trim() || isNaN(lat) || isNaN(lon) || isNaN(tz)) {
+      showError("பிறந்த ஊரை பட்டியலிலிருந்து தேர்ந்தெடுக்கவும் (ஆங்கில எழுத்துக்களில் தட்டச்சு செய்து தேடலாம்).");
       return;
     }
 
-    var signedLat = latDir === "S" ? -lat : lat;
-    var signedLon = lonDir === "W" ? -lon : lon;
+    var signedLat = lat;
+    var signedLon = lon;
 
     var hour24 = hour12 % 12;
     if (ampm === "PM") hour24 += 12;
@@ -118,7 +109,7 @@
     lastChart = chart;
     renderResult(name, {
       day: day, month: month, year: year, hour12: hour12, minute: minute, ampm: ampm,
-      place: cityInput.value || "(நேரடியாக உள்ளிடப்பட்ட இடம்)", lat: signedLat, lon: signedLon, tz: tz
+      place: cityInput.value, lat: signedLat, lon: signedLon, tz: tz
     }, chart);
   });
 
