@@ -1,194 +1,221 @@
-# ஜாதகம் / Birth Chart Generator (Tamil)
+/* Vedic astrology reference data (Tamil): rashis, nakshatras, graha metadata */
+(function (global) {
+  "use strict";
 
-A fully static, Tamil-language website that generates a Vedic (sidereal)
-birth chart from a date, time and place of birth — rendered as a South
-Indian or North Indian style Rasi chart, with all labels, form fields and
-results in Tamil. Everything runs client-side in the browser; no server,
-build step, database, or API key is required (the page does load Google
-Fonts and the PDF-export libraries from public CDNs at runtime, same as any
-static site — nothing to configure or pay for).
+  var RASHIS = [
+    { ta: "மேஷம்" },
+    { ta: "ரிஷபம்" },
+    { ta: "மிதுனம்" },
+    { ta: "கடகம்" },
+    { ta: "சிம்மம்" },
+    { ta: "கன்னி" },
+    { ta: "துலாம்" },
+    { ta: "விருச்சிகம்" },
+    { ta: "தனுசு" },
+    { ta: "மகரம்" },
+    { ta: "கும்பம்" },
+    { ta: "மீனம்" }
+  ];
 
-## What it computes
+  var NAKSHATRAS = [
+    { ta: "அசுவினி" },
+    { ta: "பரணி" },
+    { ta: "கார்த்திகை" },
+    { ta: "ரோகிணி" },
+    { ta: "மிருகசீரிடம்" },
+    { ta: "திருவாதிரை" },
+    { ta: "புனர்பூசம்" },
+    { ta: "பூசம்" },
+    { ta: "ஆயில்யம்" },
+    { ta: "மகம்" },
+    { ta: "பூரம்" },
+    { ta: "உத்திரம்" },
+    { ta: "அஸ்தம்" },
+    { ta: "சித்திரை" },
+    { ta: "சுவாதி" },
+    { ta: "விசாகம்" },
+    { ta: "அனுஷம்" },
+    { ta: "கேட்டை" },
+    { ta: "மூலம்" },
+    { ta: "பூராடம்" },
+    { ta: "உத்திராடம்" },
+    { ta: "திருவோணம்" },
+    { ta: "அவிட்டம்" },
+    { ta: "சதயம்" },
+    { ta: "பூரட்டாதி" },
+    { ta: "உத்திரட்டாதி" },
+    { ta: "ரேவதி" }
+  ];
 
-- **அயனாம்சம் (Ayanamsa)**: Lahiri (Chitrapaksha), from precession theory.
-- **கிரகங்கள் (Grahas)**: சூரியன், சந்திரன், செவ்வாய், புதன், குரு, சுக்கிரன்,
-  சனி (apparent geocentric sidereal longitudes), plus ராகு/கேது (mean lunar
-  node).
-- **லக்னம் (Ascendant)**: computed from local sidereal time, obliquity of
-  the ecliptic, and the birth latitude.
-- **ராசி (D1) & நவாம்சம் (D9) charts** for every graha and the ascendant, in
-  both South Indian and North Indian style.
-- **ராசி, நட்சத்திரம் & பாதம்** (Rasi, Nakshatra & Pada) for every graha and
-  the ascendant, retrograde (வக்ரம்) flag included.
-- **திதி, கரணம், யோகம்** (Tithi, Karana, Nithya Yoga) from the Sun-Moon
-  angular relationship, and **தசை இருப்பு** (Vimshottari dasha balance at
-  birth) from the Moon's nakshatra position.
+  // Order in which grahas are computed / listed
+  var PLANET_ORDER = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"];
 
-This was cross-checked against a real reference Tamil jathagam printout and
-matches it closely — graha longitudes agree to within about a minute of arc,
-and every derived field (Lagna rasi, Moon rasi, nakshatra/pada, tithi,
-karana, yoga) matches exactly.
+  var PLANET_META = {
+    Sun:     { abbr: "சூ", ta: "சூரியன்" },
+    Moon:    { abbr: "சந்", ta: "சந்திரன்" },
+    Mars:    { abbr: "செ", ta: "செவ்வாய்" },
+    Mercury: { abbr: "பு",  ta: "புதன்" },
+    Jupiter: { abbr: "கு",  ta: "குரு" },
+    Venus:   { abbr: "சுக்", ta: "சுக்கிரன்" },
+    Saturn:  { abbr: "சனி", ta: "சனி" },
+    Rahu:    { abbr: "ரா", ta: "ராகு" },
+    Ketu:    { abbr: "கே", ta: "கேது" },
+    Asc:     { abbr: "ல", ta: "லக்னம்" }
+  };
 
-Astronomical positions are computed with the open-source
-[astronomy-engine](https://github.com/cosinekitty/astronomy) library
-(MIT licensed, bundled at `js/astronomy.min.js`).
+  function rashiIndexFromLongitude(siderealLon) {
+    return Math.floor(((siderealLon % 360) + 360) % 360 / 30);
+  }
 
-## Place-of-birth coverage
+  function degreeWithinSign(siderealLon) {
+    return ((siderealLon % 360) + 360) % 360 % 30;
+  }
 
-`js/cities.js` ships with a built-in lookup of ~190 places, in Tamil:
+  function nakshatraInfo(siderealLon) {
+    var lon = ((siderealLon % 360) + 360) % 360;
+    var span = 360 / 27; // 13.3333
+    var idx = Math.floor(lon / span);
+    var posInNak = lon - idx * span;
+    var pada = Math.floor(posInNak / (span / 4)) + 1;
+    return {
+      index: idx,
+      name: NAKSHATRAS[idx].ta,
+      pada: pada
+    };
+  }
 
-- All **38 Tamil Nadu districts** (district headquarters) plus roughly 100
-  additional well-known taluk/temple towns across every district.
-- Puducherry, Karaikal, Mahe, Yanam (Puducherry U.T.).
-- Major cities of Andhra Pradesh, Telangana, Karnataka and Kerala.
+  // Vimshottari dasha lord sequence, one per nakshatra (repeats 3x over 27)
+  var DASHA_LORD_SEQUENCE = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"];
+  var DASHA_YEARS = {
+    Ketu: 7, Venus: 20, Sun: 6, Moon: 10, Mars: 7,
+    Rahu: 18, Jupiter: 16, Saturn: 19, Mercury: 17
+  };
 
-If an exact birth place isn't in the list, pick the nearest listed town —
-manual latitude/longitude entry is intentionally not offered (see
-"Place-of-birth search" below), so a place name must be found via the search
-button to generate a chart.
+  // 15 tithi names; paksha (waxing/waning) determines which half of the
+  // cycle (1-15 Shukla, 16-30 Krishna, sharing the same 14 names + the
+  // special 15th: Pournami for Shukla, Amavasai for Krishna).
+  var TITHI_NAMES = [
+    "பிரதமை", "துவிதியை", "திரிதியை", "சதுர்த்தி", "பஞ்சமி",
+    "சஷ்டி", "சப்தமி", "அஷ்டமி", "நவமி", "தசமி",
+    "ஏகாதசி", "துவாதசி", "திரயோதசி", "சதுர்த்தசி"
+  ];
 
-## Files
+  var KARANA_MOVABLE = ["பவம்", "பாலவம்", "கௌலவம்", "தைதுலம்", "கரம்", "வணிசை", "விஷ்டி"];
+  var KARANA_FIXED = { 1: "கிம்ஸ்துக்னா", 58: "சகுனி", 59: "சதுஷ்பாதம்", 60: "நாகவம்" };
 
-```
-index.html            Page markup / form / results (Tamil)
-css/style.css          Styling (Noto Serif/Sans Tamil typefaces)
-js/astronomy.min.js    Third-party ephemeris library (MIT license)
-js/cities.js           Tamil Nadu + South India city -> lat/lon/timezone table
-js/vedic-data.js       Rasi/Nakshatra/Tithi/Karana/Yoga tables, dasha balance,
-                        Navamsa sign math, formatting helpers
-js/vedic-calc.js       Ayanamsa, planetary longitude & ascendant calculations
-js/chart-render.js     SVG drawing for South/North Indian Rasi & Navamsa charts
-js/place-picker.js     Place-name search (button-triggered, exact/fuzzy match)
-js/app.js              Form handling / wiring calculations to the results
-```
+  var YOGA_NAMES = [
+    "விஷ்கம்பம்", "பிரீதி", "ஆயுஷ்மான்", "சௌபாக்கியம்", "சோபனம்",
+    "அதிகண்டம்", "சுகர்மா", "திருதி", "சூலம்", "கண்டம்",
+    "விருத்தி", "துருவம்", "வியாகாதம்", "ஹர்ஷணம்", "வஜ்ரம்",
+    "சித்தி", "வியதீபாதம்", "வரீயான்", "பரிகம்", "சிவம்",
+    "சித்தம்", "சாத்தியம்", "சுபம்", "சுக்லம்", "பிரம்மம்",
+    "ஐந்திரம்", "வைதிருதி"
+  ];
 
-## Running locally
+  function navamsaIndexFromLongitude(siderealLon) {
+    var lon = ((siderealLon % 360) + 360) % 360;
+    return Math.floor(lon / (10 / 3)) % 12;
+  }
 
-No build step is needed. Just serve the folder, e.g.:
+  function formatDegree(siderealLon) {
+    var d = degreeWithinSign(siderealLon);
+    var deg = Math.floor(d);
+    var minFloat = (d - deg) * 60;
+    var min = Math.floor(minFloat);
+    var sec = Math.round((minFloat - min) * 60);
+    if (sec === 60) { sec = 0; min += 1; }
+    if (min === 60) { min = 0; deg += 1; }
+    return deg + "\u00B0 " + (min < 10 ? "0" + min : min) + "' " + (sec < 10 ? "0" + sec : sec) + "\"";
+  }
 
-```bash
-python3 -m http.server 8000
-```
+  // "D:M:S" of the total sidereal longitude (0-360), e.g. "106:26:8"
+  function formatLongitudeColon(siderealLon) {
+    var lon = ((siderealLon % 360) + 360) % 360;
+    var deg = Math.floor(lon);
+    var minFloat = (lon - deg) * 60;
+    var min = Math.floor(minFloat);
+    var sec = Math.round((minFloat - min) * 60);
+    if (sec === 60) { sec = 0; min += 1; }
+    if (min === 60) { min = 0; deg += 1; }
+    return deg + ":" + min + ":" + sec;
+  }
 
-then open `http://localhost:8000`.
+  // "D:M" + direction letter, e.g. "79:6E" / "12:56N"
+  function formatDegMinDirection(value, positiveLetter, negativeLetter) {
+    var letter = value >= 0 ? positiveLetter : negativeLetter;
+    var abs = Math.abs(value);
+    var deg = Math.floor(abs);
+    var min = Math.round((abs - deg) * 60);
+    if (min === 60) { min = 0; deg += 1; }
+    return deg + ":" + min + letter;
+  }
 
-(Opening `index.html` directly with a `file://` URL also works in most
-browsers, since everything is plain script tags with no bundler.)
+  function tithiInfo(sunLong, moonLong) {
+    var diff = ((moonLong - sunLong) % 360 + 360) % 360;
+    var index = Math.floor(diff / 12); // 0-29
+    var isShukla = index < 15;
+    var withinPaksha = isShukla ? index : index - 15; // 0-14
+    var name = withinPaksha === 14
+      ? (isShukla ? "பௌர்ணமி" : "அமாவாசை")
+      : TITHI_NAMES[withinPaksha];
+    return {
+      index: index + 1,
+      name: name,
+      paksha: isShukla ? "சுக்லபக்ஷம் (வளர்பிறை)" : "கிருஷ்ணபக்ஷம் (தேய்பிறை)"
+    };
+  }
 
-## Deploying to GitHub Pages
+  function karanaInfo(sunLong, moonLong) {
+    var diff = ((moonLong - sunLong) % 360 + 360) % 360;
+    var num = Math.floor(diff / 6) + 1; // 1-60
+    if (KARANA_FIXED[num]) return { name: KARANA_FIXED[num] };
+    var idx = (num - 2) % 7;
+    return { name: KARANA_MOVABLE[idx] };
+  }
 
-1. Create a new GitHub repository (public, or private with GitHub Pages
-   available on your plan).
-2. Push these files to the repository root (or to a `docs/` folder — either
-   works, you'll pick the source folder in the next step).
+  function yogaInfo(sunLong, moonLong) {
+    var sum = ((sunLong + moonLong) % 360 + 360) % 360;
+    var span = 360 / 27;
+    var idx = Math.floor(sum / span);
+    return { name: YOGA_NAMES[idx] };
+  }
 
-   ```bash
-   git init
-   git add .
-   git commit -m "Tamil birth chart generator"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/<your-repo>.git
-   git push -u origin main
-   ```
-3. On GitHub, go to the repository's **Settings → Pages**.
-4. Under **Build and deployment**, set **Source** to "Deploy from a branch",
-   choose the `main` branch and the `/ (root)` folder (or `/docs` if that's
-   where you put the files), then **Save**.
-5. GitHub will publish the site at
-   `https://<your-username>.github.io/<your-repo>/` within a minute or two.
+  function dashaBalance(moonLong) {
+    var lon = ((moonLong % 360) + 360) % 360;
+    var span = 360 / 27;
+    var nakIndex = Math.floor(lon / span);
+    var posInNak = lon - nakIndex * span;
+    var fractionElapsed = posInNak / span;
+    var lord = DASHA_LORD_SEQUENCE[nakIndex % 9];
+    var totalYears = DASHA_YEARS[lord];
+    var balanceYears = (1 - fractionElapsed) * totalYears;
 
-No environment variables, secrets, or build actions are needed since it's a
-plain static site.
+    var totalDays = balanceYears * 360; // 12 x 30-day months, standard dasha convention
+    var years = Math.floor(totalDays / 360);
+    var remAfterYears = totalDays - years * 360;
+    var months = Math.floor(remAfterYears / 30);
+    var days = Math.round(remAfterYears - months * 30);
+    if (days === 30) { days = 0; months += 1; }
+    if (months === 12) { months = 0; years += 1; }
 
-## Branding & contact footer
+    return { lord: lord, years: years, months: months, days: days };
+  }
 
-- The page header now reads **நந்தினி ஜோதிட நிலையம்** (Nandhini Jodhida
-  Nilayam) instead of a generic tool title.
-- The footer has two columns: **தொடர்பு** (contact details — Kalyana
-  Sundaram, Dhandapani Kovil Street, Thirupattur - 635601, phone as a
-  tappable `tel:` link) and **சேவைகள்** (the three services offered:
-  marriage horoscope matching, horoscope/life predictions, and auspicious
-  date/time selection for events).
-
-## PDF download
-
-Once a chart is generated, a "PDF ஆக பதிவிறக்கம் செய்ய" button appears below
-it. Clicking it (`js/pdf-export.js`):
-
-1. Builds an off-screen copy of the page **header + full results (details
-   table, graha table, dasha line, both Rasi/Navamsa charts) + footer**.
-2. Renders that to an image with [html2canvas](https://html2canvas.hertzen.com/)
-   and lays it into an A4 PDF with [jsPDF](https://github.com/parallax/jsPDF)
-   (paginating automatically if the content is taller than one page).
-3. Triggers a normal browser download of the finished file (named after the
-   person, e.g. `Monica-jathagam.pdf`) straight to the device — no server
-   round-trip.
-
-Both libraries are loaded from a CDN (jsDelivr) in `index.html`; if the
-device is offline when the button is pressed, a Tamil error message explains
-that the PDF tool couldn't load rather than failing silently.
-
-## Place-of-birth search
-
-The city field (`js/place-picker.js`) is a plain text box plus a "தேடு"
-(Search) button — no dropdown, no autocomplete-as-you-type:
-
-- Type a place name (English or Tamil spelling) and press "தேடு" (or Enter).
-- It first looks for an **exact** match, then a name that **starts with**
-  what you typed, then a **looser match** anywhere in the name — so
-  "Vellore", "vellore", or "வேலூர்" all resolve to the same place.
-- If nothing in the list matches, an error message appears and no chart can
-  be generated until a valid place is found.
-- A successful match fills in the hidden latitude/longitude fields and the
-  read-only time-zone field automatically, and shows a small green
-  confirmation line under the search box.
-- Editing the text after a match clears the resolved coordinates, so a
-  stale lat/lon can never be silently submitted for a different name.
-
-## Results layout
-
-After submitting, the results panel mirrors a traditional printed jathagam:
-
-- A details table (பெயர், பிறந்த நாள், பிறந்த நேரம், பிறந்த இடம்,
-  நெட்டாங்கு, அகலாங்கு, உதய லக்னம், ராசி, விண்மீன், திதி, கரணம், யோகம்).
-- A graha-position table (லக்னம் + 9 grahas) with total sidereal longitude
-  in `D:M:S` form, rasi, and nakshatra-pada — in the traditional
-  Lagna/Sun/Moon/Mercury/Venus/Mars/Jupiter/Saturn/Rahu/Ketu order.
-- The Vimshottari dasha balance running at birth.
-- **Both the ராசி (D1/Rasi) and நவாம்சம் (D9/Navamsa) charts side by side**,
-  redrawn together whenever the South/North Indian style toggle changes.
-
-## Mobile support
-
-The layout is responsive down to small phone screens (~320px wide):
-
-- Form rows (date, time, coordinates) use a flexible grid that reflows to
-  fewer columns automatically as the screen narrows, instead of a fixed
-  breakpoint that could overflow with longer Tamil month/city names.
-- All inputs/selects use a 16px base font size so mobile browsers (iOS
-  Safari in particular) don't auto-zoom on focus, and use full available
-  width with safe minimum widths so nothing overflows the viewport.
-- The birth-chart SVG scales fluidly with the container (no fixed pixel
-  width), so it stays crisp and fully visible from small phones up to
-  desktop.
-- The graha-position table scrolls horizontally on very narrow screens
-  instead of squeezing/wrapping unreadably.
-- The "Generate" button is full-width on phones for an easier tap target.
-
-## Notes on accuracy
-
-- Positions use apparent geocentric coordinates (true equinox of date) minus
-  the Lahiri ayanamsa, matching the convention used by most Vedic
-  panchangam software. This was checked against known Sankranti dates
-  (e.g. the Sun's transit into sidereal Capricorn/Makara around January 14–15
-  and into Gemini/Mithuna around June 14–15).
-- Rahu/Ketu use the **mean** lunar node (the convention most commonly used in
-  traditional Vedic astrology), not the oscillating "true" node.
-- The Ascendant formula assumes a birth time already converted to standard
-  (non-daylight-saving) local time, matched with the correct UTC offset,
-  which is why the time-zone field is auto-filled from the selected city
-  rather than left to a browser locale guess.
-- City coordinates are curated to a few decimal degrees (roughly ±1 km),
-  which is more than sufficient for chart accuracy. For a place not listed,
-  pick the nearest listed town.
-
+  global.VedicData = {
+    RASHIS: RASHIS,
+    NAKSHATRAS: NAKSHATRAS,
+    PLANET_ORDER: PLANET_ORDER,
+    PLANET_META: PLANET_META,
+    rashiIndexFromLongitude: rashiIndexFromLongitude,
+    navamsaIndexFromLongitude: navamsaIndexFromLongitude,
+    degreeWithinSign: degreeWithinSign,
+    nakshatraInfo: nakshatraInfo,
+    formatDegree: formatDegree,
+    formatLongitudeColon: formatLongitudeColon,
+    formatDegMinDirection: formatDegMinDirection,
+    tithiInfo: tithiInfo,
+    karanaInfo: karanaInfo,
+    yogaInfo: yogaInfo,
+    dashaBalance: dashaBalance
+  };
+})(window);
