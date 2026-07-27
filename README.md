@@ -84,6 +84,26 @@ browsers, since everything is plain script tags with no bundler.)
 No environment variables, secrets, or build actions are needed since it's a
 plain static site.
 
+## Place-of-birth autocomplete
+
+The city field (`js/place-picker.js`) is a custom autocomplete, not a native
+`<datalist>`, so it can search by the English spelling while still filling in
+the Tamil name:
+
+- Type English letters (e.g. `che`) and it matches place names whose English
+  spelling **starts with** what you typed first (Chennai, Chengalpattu,
+  Cheyyar, ...), with looser "contains" matches listed after.
+- A Tamil-script prefix also works, for people typing on a Tamil keyboard.
+- **Desktop**: results appear as a dropdown list under the field (arrow
+  keys + Enter to navigate, Escape or an outside click to dismiss).
+- **Mobile** (≤640px wide): tapping the field opens a full-screen overlay
+  ("bottom sheet") with its own search box and a scrollable result list,
+  instead of a cramped inline dropdown — closes via the ✕ button, tapping
+  outside the sheet, or Escape.
+
+Selecting any result fills the latitude/longitude/UTC-offset fields
+automatically; a place not in the list can still be entered manually.
+
 ## Mobile support
 
 The layout is responsive down to small phone screens (~320px wide):

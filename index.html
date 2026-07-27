@@ -93,10 +93,13 @@
 
       <fieldset class="field-group">
         <legend>பிறந்த ஊர்</legend>
-        <div class="field">
-          <label for="place">ஊரைத் தேடத் தட்டச்சு செய்யவும், அல்லது கீழே கோ-ஆர்டினேட்களை நேரடியாக உள்ளிடவும்</label>
-          <input type="text" id="place" list="city-options" placeholder="ஊர் பெயரைத் தட்டச்சு செய்யத் தொடங்குங்கள்&hellip;" autocomplete="off">
-          <datalist id="city-options"></datalist>
+        <div class="field place-field">
+          <label for="place">ஊர் பெயரை ஆங்கில எழுத்துக்களில் தட்டச்சு செய்யவும் (உதா. "che" &rarr; Chennai), அல்லது கீழே கோ-ஆர்டினேட்களை நேரடியாக உள்ளிடவும்</label>
+          <div class="place-input-wrap">
+            <input type="text" id="place" placeholder="உதா. Chennai, Madurai, Coimbatore&hellip;" autocomplete="off"
+                   role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="place-dropdown">
+            <ul id="place-dropdown" class="place-dropdown" role="listbox" hidden></ul>
+          </div>
           <p class="hint small">தமிழ்நாடு &amp; தென் இந்திய ஊர்கள் பட்டியலில் உள்ளன. உங்கள் ஊர் இல்லையெனில், அதன் அட்சரேகை/தீர்க்கரேகையை நேரடியாக உள்ளிடலாம்.</p>
         </div>
 
@@ -132,6 +135,18 @@
 
       <button type="submit" class="btn-primary">ஜாதகம் தயாரிக்க</button>
     </form>
+
+    <div id="place-overlay" class="place-overlay" hidden>
+      <div class="place-overlay-sheet">
+        <div class="place-overlay-header">
+          <span>ஊரைத் தேர்ந்தெடுக்கவும்</span>
+          <button type="button" id="place-overlay-close" aria-label="மூடு">&times;</button>
+        </div>
+        <input type="text" id="place-overlay-search" class="place-overlay-search"
+               placeholder="ஆங்கிலத்தில் தட்டச்சு செய்யவும் (உதா. Madurai)&hellip;" autocomplete="off">
+        <ul id="place-overlay-list" class="place-overlay-list" role="listbox"></ul>
+      </div>
+    </div>
   </section>
 
   <section class="panel result-panel" id="result" hidden aria-labelledby="result-heading">
@@ -177,6 +192,7 @@
 <script src="js/vedic-data.js"></script>
 <script src="js/vedic-calc.js"></script>
 <script src="js/chart-render.js"></script>
+<script src="js/place-picker.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

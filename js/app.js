@@ -12,7 +12,6 @@
   var errorBox = document.getElementById("form-error");
   var styleToggle = document.querySelectorAll('input[name="chart-style"]');
   var cityInput = document.getElementById("place");
-  var cityList = document.getElementById("city-options");
   var latInput = document.getElementById("latitude");
   var lonInput = document.getElementById("longitude");
   var tzInput = document.getElementById("timezone");
@@ -51,20 +50,17 @@
   fillSelect(hourSel, 1, 12, false);
   fillSelect(minuteSel, 0, 59, true);
 
-  // Populate city datalist (Tamil names)
-  window.CITY_LIST.forEach(function (c) {
-    var opt = document.createElement("option");
-    opt.value = c.ta;
-    cityList.appendChild(opt);
-  });
-
-  cityInput.addEventListener("change", function () {
-    var match = window.CITY_LIST.filter(function (c) { return c.ta === cityInput.value; })[0];
-    if (match) {
-      latInput.value = match.lat.toFixed(4);
-      lonInput.value = match.lon.toFixed(4);
-      tzInput.value = match.tz;
-    }
+  // Place-of-birth autocomplete (English-letter search, mobile overlay)
+  window.PlacePicker.init({
+    input: cityInput,
+    dropdown: document.getElementById("place-dropdown"),
+    latInput: latInput,
+    lonInput: lonInput,
+    tzInput: tzInput,
+    overlay: document.getElementById("place-overlay"),
+    overlaySearch: document.getElementById("place-overlay-search"),
+    overlayList: document.getElementById("place-overlay-list"),
+    overlayClose: document.getElementById("place-overlay-close")
   });
 
   function showError(msg) {
