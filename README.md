@@ -14,8 +14,18 @@ build step, database, or API key is required.
   node).
 - **லக்னம் (Ascendant)**: computed from local sidereal time, obliquity of
   the ecliptic, and the birth latitude.
+- **ராசி (D1) & நவாம்சம் (D9) charts** for every graha and the ascendant, in
+  both South Indian and North Indian style.
 - **ராசி, நட்சத்திரம் & பாதம்** (Rasi, Nakshatra & Pada) for every graha and
   the ascendant, retrograde (வக்ரம்) flag included.
+- **திதி, கரணம், யோகம்** (Tithi, Karana, Nithya Yoga) from the Sun-Moon
+  angular relationship, and **தசை இருப்பு** (Vimshottari dasha balance at
+  birth) from the Moon's nakshatra position.
+
+This was cross-checked against a real reference Tamil jathagam printout and
+matches it closely — graha longitudes agree to within about a minute of arc,
+and every derived field (Lagna rasi, Moon rasi, nakshatra/pada, tithi,
+karana, yoga) matches exactly.
 
 Astronomical positions are computed with the open-source
 [astronomy-engine](https://github.com/cosinekitty/astronomy) library
@@ -31,9 +41,9 @@ Astronomical positions are computed with the open-source
 - Major cities of Andhra Pradesh, Telangana, Karnataka and Kerala.
 
 If an exact birth place isn't in the list, pick the nearest listed town —
-manual latitude/longitude entry is intentionally no longer offered (see
-"Place-of-birth autocomplete" below), so a place must be selected from the
-search results to generate a chart.
+manual latitude/longitude entry is intentionally not offered (see
+"Place-of-birth search" below), so a place name must be found via the search
+button to generate a chart.
 
 ## Files
 
@@ -42,10 +52,12 @@ index.html            Page markup / form / results (Tamil)
 css/style.css          Styling (Noto Serif/Sans Tamil typefaces)
 js/astronomy.min.js    Third-party ephemeris library (MIT license)
 js/cities.js           Tamil Nadu + South India city -> lat/lon/timezone table
-js/vedic-data.js       Rasi/Nakshatra Tamil names + formatting helpers
+js/vedic-data.js       Rasi/Nakshatra/Tithi/Karana/Yoga tables, dasha balance,
+                        Navamsa sign math, formatting helpers
 js/vedic-calc.js       Ayanamsa, planetary longitude & ascendant calculations
-js/chart-render.js     SVG drawing for South Indian & North Indian charts
-js/app.js              Form handling / wiring calculations to the chart
+js/chart-render.js     SVG drawing for South/North Indian Rasi & Navamsa charts
+js/place-picker.js     Place-name search (button-triggered, exact/fuzzy match)
+js/app.js              Form handling / wiring calculations to the results
 ```
 
 ## Running locally
@@ -86,29 +98,35 @@ browsers, since everything is plain script tags with no bundler.)
 No environment variables, secrets, or build actions are needed since it's a
 plain static site.
 
-## Place-of-birth autocomplete
+## Place-of-birth search
 
-The city field (`js/place-picker.js`) is a custom autocomplete, not a native
-`<datalist>`, so it can search by the English spelling while still filling in
-the Tamil name — and it now works identically on desktop and mobile as a
-single inline dropdown anchored directly under the field, so searching and
-selecting a result always stay on the same screen (no separate popup/sheet,
-no page scrolling required):
+The city field (`js/place-picker.js`) is a plain text box plus a "தேடு"
+(Search) button — no dropdown, no autocomplete-as-you-type:
 
-- Type English letters (e.g. `che`) and it matches place names whose English
-  spelling **starts with** what you typed first (Chennai, Chengalpattu,
-  Cheyyar, ...), with looser "contains" matches listed after. A Tamil-script
-  prefix also works for people typing on a Tamil keyboard.
-- Both the default suggestions (shown when the field is focused empty) and
-  every search result list are sorted alphabetically by English name.
-- Focusing the field with no text shows a short list of major cities so
-  there's always something to pick from immediately.
-- Arrow keys + Enter navigate the list; Escape or clicking outside closes it.
-- **Latitude and longitude are no longer visible form fields.** Selecting a
-  place fills them in behind the scenes (as hidden inputs) and shows a small
-  green confirmation line under the field instead; the time zone field
-  auto-fills too and is read-only. A place must be picked from the list to
-  submit the form — free-typed text alone won't compute a chart.
+- Type a place name (English or Tamil spelling) and press "தேடு" (or Enter).
+- It first looks for an **exact** match, then a name that **starts with**
+  what you typed, then a **looser match** anywhere in the name — so
+  "Vellore", "vellore", or "வேலூர்" all resolve to the same place.
+- If nothing in the list matches, an error message appears and no chart can
+  be generated until a valid place is found.
+- A successful match fills in the hidden latitude/longitude fields and the
+  read-only time-zone field automatically, and shows a small green
+  confirmation line under the search box.
+- Editing the text after a match clears the resolved coordinates, so a
+  stale lat/lon can never be silently submitted for a different name.
+
+## Results layout
+
+After submitting, the results panel mirrors a traditional printed jathagam:
+
+- A details table (பெயர், பிறந்த நாள், பிறந்த நேரம், பிறந்த இடம்,
+  நெட்டாங்கு, அகலாங்கு, உதய லக்னம், ராசி, விண்மீன், திதி, கரணம், யோகம்).
+- A graha-position table (லக்னம் + 9 grahas) with total sidereal longitude
+  in `D:M:S` form, rasi, and nakshatra-pada — in the traditional
+  Lagna/Sun/Moon/Mercury/Venus/Mars/Jupiter/Saturn/Rahu/Ketu order.
+- The Vimshottari dasha balance running at birth.
+- **Both the ராசி (D1/Rasi) and நவாம்சம் (D9/Navamsa) charts side by side**,
+  redrawn together whenever the South/North Indian style toggle changes.
 
 ## Mobile support
 

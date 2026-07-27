@@ -94,13 +94,12 @@
       <fieldset class="field-group">
         <legend>பிறந்த ஊர்</legend>
         <div class="field place-field">
-          <label for="place">ஊர் பெயரை ஆங்கில எழுத்துக்களில் தட்டச்சு செய்யவும் (உதா. "che" &rarr; Chennai)</label>
+          <label for="place">ஊர் பெயரை உள்ளிட்டு "தேடு" பொத்தானை அழுத்தவும் (உதா. Chennai, Madurai, Vellore)</label>
           <div class="place-input-wrap">
-            <input type="text" id="place" placeholder="உதா. Chennai, Madurai, Coimbatore&hellip;" autocomplete="off"
-                   role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="place-dropdown">
-            <ul id="place-dropdown" class="place-dropdown" role="listbox" hidden></ul>
+            <input type="text" id="place" placeholder="ஊர் பெயர்&hellip;" autocomplete="off">
+            <button type="button" id="place-search-btn" class="btn-search">தேடு</button>
           </div>
-          <p class="hint small">தமிழ்நாடு &amp; தென் இந்திய ஊர்கள் பட்டியலில் உள்ளன. தேர்ந்தெடுத்தவுடன் அட்சரேகை/தீர்க்கரேகை தானாகவே அமையும்.</p>
+          <p id="place-error" class="place-error" role="alert" hidden></p>
           <p id="place-resolved" class="place-resolved" hidden></p>
           <input type="hidden" id="latitude">
           <input type="hidden" id="longitude">
@@ -108,7 +107,7 @@
 
         <div class="field">
           <label for="timezone">நேர மண்டலம் (UTC ஈடு)</label>
-          <input type="number" id="timezone" step="0.25" placeholder="ஊரைத் தேர்ந்தெடுக்க தானாக நிரம்பும்" readonly>
+          <input type="number" id="timezone" step="0.25" placeholder="ஊரைத் தேடிய பின் தானாக நிரம்பும்" readonly>
         </div>
       </fieldset>
 
@@ -120,32 +119,43 @@
 
   <section class="panel result-panel" id="result" hidden aria-labelledby="result-heading">
     <div class="result-head">
-      <div>
-        <h2 id="result-heading"><span id="result-name">நபர்</span> அவர்களின் ஜாதகம்</h2>
-        <p class="result-meta" id="result-meta"></p>
-      </div>
+      <h2 id="result-heading"><span id="result-name">நபர்</span> அவர்களின் ஜாதகம்</h2>
       <div class="style-toggle" role="radiogroup" aria-label="ஜாதக முறை">
         <label><input type="radio" name="chart-style" value="south" checked> தென் இந்திய முறை</label>
         <label><input type="radio" name="chart-style" value="north"> வட இந்திய முறை</label>
       </div>
     </div>
 
-    <div class="chart-frame">
-      <div id="chart-host" class="chart-host"></div>
+    <div class="table-wrap">
+      <table class="details-table">
+        <tbody id="details-table-body"></tbody>
+      </table>
     </div>
 
-    <p class="summary-line" id="asc-summary"></p>
-    <p class="summary-line" id="moon-summary"></p>
-
-    <h3>கிரக நிலைகள்</h3>
+    <h3>நிராயண ஸ்புடங்கள்</h3>
     <div class="table-wrap">
       <table id="planet-table">
         <thead>
-          <tr><th>கிரகம்</th><th>ராசி</th><th>பாகை</th><th>நட்சத்திரம்</th><th>பாதம்</th></tr>
+          <tr><th>கிரஹம்</th><th>தீர்காம்சம்</th><th>ராசி</th><th>நட்சத்திரம்-பாதம்</th></tr>
         </thead>
         <tbody></tbody>
       </table>
     </div>
+
+    <p class="summary-line" id="dasha-summary"></p>
+
+    <div class="charts-row">
+      <div class="chart-frame">
+        <p class="chart-caption">ராசி</p>
+        <div id="chart-host-rasi" class="chart-host"></div>
+      </div>
+      <div class="chart-frame">
+        <p class="chart-caption">நவாம்சம்</p>
+        <div id="chart-host-navamsa" class="chart-host"></div>
+      </div>
+    </div>
+
+    <p class="summary-line" id="rashi-note"></p>
 
     <p class="disclaimer">லாகிரி (சித்திரபட்சம்) அயனாம்சப்படி நிரயண கிரக நிலைகள் கணக்கிடப்பட்டுள்ளன. ராகு/கேது சராசரி பாதைக் கணக்கின்படி (mean node) தரப்பட்டுள்ளன. இது பாரம்பரிய படிப்பு &amp; தகவல் நோக்கத்திற்கானது மட்டுமே.</p>
   </section>

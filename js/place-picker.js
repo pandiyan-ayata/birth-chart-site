@@ -1,182 +1,108 @@
-/* Place-of-birth autocomplete: a single inline dropdown that works the
-   same way on desktop and mobile, always anchored directly under the
-   field so search + results + selection all stay on the same screen
-   (no full-page overlay, no separate scroll). Typing English letters
-   filters CITY_LIST by English-name prefix (falls back to a Tamil-name
-   prefix so a Tamil keyboard also works); results are alphabetical. */
+/* Place-of-birth search: a plain text field + a "தேடு" (Search) button.
+   Looks the typed name up against CITY_LIST (English or Tamil spelling,
+   exact match first, then prefix, then contains) and fills the hidden
+   latitude/longitude/timezone fields. Shows an error message if nothing
+   in the list matches what was typed. */
 (function (global) {
   "use strict";
 
-  var DEFAULT_CITY_NAMES = [
-    "Chennai", "Madurai", "Coimbatore", "Tiruchirappalli", "Salem",
-    "Vellore", "Thanjavur", "Tirunelveli", "Puducherry", "Bengaluru"
-  ];
-
-  function byEnglishName(a, b) {
-    return a.en.localeCompare(b.en, "en", { sensitivity: "base" });
+  function norm(s) {
+    return (s || "").trim().toLowerCase();
   }
 
-  function filterCities(query) {
+  function findCity(query) {
     var CITY_LIST = global.CITY_LIST || [];
-    var q = (query || "").trim().toLowerCase();
-    if (!q) return [];
+    var q = norm(query);
+    var qTa = (query || "").trim();
+    if (!q) return null;
 
-    var starts = [];
-    var contains = [];
-    CITY_LIST.forEach(function (c) {
-      var en = c.en.toLowerCase();
-      var ta = c.ta;
-      if (en.indexOf(q) === 0 || ta.indexOf(query.trim()) === 0) {
-        starts.push(c);
-      } else if (en.indexOf(q) > -1) {
-        contains.push(c);
-      }
-    });
-    starts.sort(byEnglishName);
-    contains.sort(byEnglishName);
-    return starts.concat(contains).slice(0, 40);
-  }
+    var i, c;
 
-  function defaultCities() {
-    var CITY_LIST = global.CITY_LIST || [];
-    return DEFAULT_CITY_NAMES
-      .map(function (name) {
-        return CITY_LIST.filter(function (c) { return c.en === name; })[0];
-      })
-      .filter(Boolean)
-      .sort(byEnglishName);
+    for (i = 0; i < CITY_LIST.length; i++) {
+      c = CITY_LIST[i];
+      if (norm(c.en) === q || c.ta === qTa) return c;
+    }
+
+    var startsEn = CITY_LIST.filter(function (c) { return norm(c.en).indexOf(q) === 0; });
+    var startsTa = CITY_LIST.filter(function (c) { return c.ta.indexOf(qTa) === 0; });
+    var starts = startsEn.concat(startsTa);
+    if (starts.length) {
+      starts.sort(function (a, b) { return a.en.localeCompare(b.en, "en", { sensitivity: "base" }); });
+      return starts[0];
+    }
+
+    var containsEn = CITY_LIST.filter(function (c) { return norm(c.en).indexOf(q) > -1; });
+    var containsTa = CITY_LIST.filter(function (c) { return c.ta.indexOf(qTa) > -1; });
+    var contains = containsEn.concat(containsTa);
+    if (contains.length) {
+      contains.sort(function (a, b) { return a.en.localeCompare(b.en, "en", { sensitivity: "base" }); });
+      return contains[0];
+    }
+
+    return null;
   }
 
   function initPlacePicker(opts) {
     var input = opts.input;
-    var dropdown = opts.dropdown;
+    var searchBtn = opts.searchBtn;
     var latInput = opts.latInput;
     var lonInput = opts.lonInput;
     var tzInput = opts.tzInput;
     var resolvedCaption = opts.resolvedCaption;
+    var errorCaption = opts.errorCaption;
 
-    var activeIndex = -1;
-
-    function selectCity(city) {
-      input.value = city.ta;
-      latInput.value = city.lat.toFixed(4);
-      lonInput.value = city.lon.toFixed(4);
-      tzInput.value = city.tz;
-      if (resolvedCaption) {
-        resolvedCaption.textContent =
-          "\u2713 " + city.ta + " (" + city.en + ") \u2014 " +
-          "அட்சரேகை " + city.lat.toFixed(2) + "\u00B0, தீர்க்கரேகை " + city.lon.toFixed(2) + "\u00B0, UTC+" + city.tz;
-        resolvedCaption.hidden = false;
-      }
-      closeDropdown();
+    function showError(msg) {
+      errorCaption.textContent = msg;
+      errorCaption.hidden = !msg;
     }
 
     function clearResolved() {
       latInput.value = "";
       lonInput.value = "";
       tzInput.value = "";
-      if (resolvedCaption) {
-        resolvedCaption.hidden = true;
-        resolvedCaption.textContent = "";
-      }
-    }
-
-    function renderItems(cities, emptyMessage) {
-      dropdown.innerHTML = "";
-      activeIndex = -1;
-      if (!cities.length) {
-        if (emptyMessage) {
-          var li = document.createElement("li");
-          li.className = "place-empty";
-          li.textContent = emptyMessage;
-          dropdown.appendChild(li);
-        }
-        return;
-      }
-      cities.forEach(function (city) {
-        var li = document.createElement("li");
-        li.setAttribute("role", "option");
-        var btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "place-option";
-        btn.innerHTML = '<span class="place-ta">' + city.ta + '</span>' +
-          '<span class="place-en">' + city.en + "</span>";
-        // Prevent the input from blurring before the click is handled -
-        // this was the root cause of "can't select after search".
-        btn.addEventListener("mousedown", function (e) { e.preventDefault(); });
-        btn.addEventListener("click", function () { selectCity(city); });
-        li.appendChild(btn);
-        dropdown.appendChild(li);
-      });
-    }
-
-    function openDropdown(cities, emptyMessage) {
-      renderItems(cities, emptyMessage);
-      dropdown.hidden = false;
-      input.setAttribute("aria-expanded", "true");
-    }
-    function closeDropdown() {
-      dropdown.hidden = true;
-      input.setAttribute("aria-expanded", "false");
+      resolvedCaption.hidden = true;
+      resolvedCaption.textContent = "";
     }
 
     function runSearch() {
-      var q = input.value.trim();
-      if (!q) {
-        openDropdown(defaultCities(), "");
+      showError("");
+      clearResolved();
+      var query = input.value.trim();
+      if (!query) {
+        showError("தேட ஒரு ஊர் பெயரை உள்ளிடவும்.");
         return;
       }
-      openDropdown(filterCities(q), "பொருந்தும் ஊர் இல்லை");
+      var city = findCity(query);
+      if (!city) {
+        showError("\u201C" + query + "\u201D என்ற ஊர் பெயர் எங்கள் பட்டியலில் இல்லை. எழுத்துப்பிழை இல்லாமல் சரிபார்க்கவும், அல்லது அருகிலுள்ள பெரிய ஊரின் பெயரை முயற்சிக்கவும்.");
+        return;
+      }
+      input.value = city.ta;
+      latInput.value = city.lat.toFixed(4);
+      lonInput.value = city.lon.toFixed(4);
+      tzInput.value = city.tz;
+      resolvedCaption.textContent =
+        "\u2713 " + city.ta + " (" + city.en + ") \u2014 " +
+        "அட்சரேகை " + city.lat.toFixed(2) + "\u00B0, தீர்க்கரேகை " + city.lon.toFixed(2) + "\u00B0, UTC+" + city.tz;
+      resolvedCaption.hidden = false;
     }
 
-    input.addEventListener("input", function () {
-      // Any manual edit invalidates a previously resolved selection,
-      // since coordinates now only ever come from picking a city.
-      clearResolved();
-      runSearch();
-    });
-
-    input.addEventListener("focus", runSearch);
+    searchBtn.addEventListener("click", runSearch);
 
     input.addEventListener("keydown", function (e) {
-      if (dropdown.hidden) return;
-      var items = dropdown.querySelectorAll(".place-option");
-      if (!items.length) return;
-      if (e.key === "ArrowDown") {
+      if (e.key === "Enter") {
         e.preventDefault();
-        activeIndex = Math.min(activeIndex + 1, items.length - 1);
-        highlight(items);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        activeIndex = Math.max(activeIndex - 1, 0);
-        highlight(items);
-      } else if (e.key === "Enter") {
-        if (activeIndex >= 0 && items[activeIndex]) {
-          e.preventDefault();
-          items[activeIndex].click();
-        }
-      } else if (e.key === "Escape") {
-        closeDropdown();
+        runSearch();
       }
     });
 
-    function highlight(items) {
-      items.forEach(function (el, i) {
-        el.classList.toggle("is-active", i === activeIndex);
-        if (i === activeIndex) el.scrollIntoView({ block: "nearest" });
-      });
-    }
-
-    document.addEventListener("click", function (e) {
-      if (!dropdown.hidden && !input.contains(e.target) && !dropdown.contains(e.target)) {
-        closeDropdown();
-      }
-    });
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !dropdown.hidden) closeDropdown();
+    // Editing the field after a successful match invalidates it, since a
+    // stale lat/lon must never be submitted for a name the user changed.
+    input.addEventListener("input", function () {
+      if (!resolvedCaption.hidden) clearResolved();
+      showError("");
     });
   }
 
-  global.PlacePicker = { init: initPlacePicker };
+  global.PlacePicker = { init: initPlacePicker, findCity: findCity };
 })(window);

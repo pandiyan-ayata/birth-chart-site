@@ -20,17 +20,26 @@
     return t;
   }
 
-  // Group planets (+ ascendant) by rashi index (0-11).
-  function groupByRashi(chart) {
+  // Group planets (+ ascendant) by sign index (0-11), using whichever
+  // sign-index function is supplied (Rashi/D1 or Navamsa/D9).
+  function groupBySignFn(chart, signIndexFn) {
     var groups = [[], [], [], [], [], [], [], [], [], [], [], []];
     VD.PLANET_ORDER.forEach(function (name) {
       var p = chart.planets[name];
-      var idx = VD.rashiIndexFromLongitude(p.longitude);
+      var idx = signIndexFn(p.longitude);
       groups[idx].push({ key: name, retro: p.retrograde, longitude: p.longitude });
     });
-    var ascIdx = VD.rashiIndexFromLongitude(chart.ascendant);
+    var ascIdx = signIndexFn(chart.ascendant);
     groups[ascIdx].push({ key: "Asc", retro: false, longitude: chart.ascendant });
     return groups;
+  }
+
+  function groupByRashi(chart) {
+    return groupBySignFn(chart, VD.rashiIndexFromLongitude);
+  }
+
+  function groupByNavamsa(chart) {
+    return groupBySignFn(chart, VD.navamsaIndexFromLongitude);
   }
 
   function planetLabel(item) {
@@ -50,16 +59,18 @@
 
   function renderSouthIndian(chart, opts) {
     opts = opts || {};
+    var signIndexFn = opts.signIndexFn || VD.rashiIndexFromLongitude;
+    var centerLabel = opts.centerLabel || "ராசி";
     var size = 400;
     var cell = size / 4;
-    var groups = groupByRashi(chart);
-    var ascRashi = VD.rashiIndexFromLongitude(chart.ascendant);
+    var groups = groupBySignFn(chart, signIndexFn);
+    var ascRashi = signIndexFn(chart.ascendant);
 
     var svg = svgEl("svg", {
       viewBox: "0 0 " + size + " " + size,
       class: "chart-svg south-chart",
       role: "img",
-      "aria-label": "South Indian style birth chart"
+      "aria-label": centerLabel + " chart, South Indian style"
     });
 
     // outer + grid lines
@@ -100,7 +111,7 @@
 
     // center ornament: title
     svg.appendChild(text(size / 2, size / 2 - 6, "\u0950", "chart-center-glyph"));
-    svg.appendChild(text(size / 2, size / 2 + 18, opts.centerLabel || "ராசி", "chart-center-label"));
+    svg.appendChild(text(size / 2, size / 2 + 18, centerLabel, "chart-center-label"));
 
     return svg;
   }
@@ -124,15 +135,16 @@
 
   function renderNorthIndian(chart, opts) {
     opts = opts || {};
+    var signIndexFn = opts.signIndexFn || VD.rashiIndexFromLongitude;
     var size = 400;
-    var ascRashi = VD.rashiIndexFromLongitude(chart.ascendant);
-    var groups = groupByRashi(chart);
+    var ascRashi = signIndexFn(chart.ascendant);
+    var groups = groupBySignFn(chart, signIndexFn);
 
     var svg = svgEl("svg", {
       viewBox: "0 0 " + size + " " + size,
       class: "chart-svg north-chart",
       role: "img",
-      "aria-label": "North Indian style birth chart"
+      "aria-label": (opts.centerLabel || "Rasi") + " chart, North Indian style"
     });
 
     svg.appendChild(svgEl("rect", { x: 0, y: 0, width: size, height: size, class: "chart-bg" }));
@@ -173,9 +185,19 @@
     return svg;
   }
 
+  function renderSouthIndianNavamsa(chart) {
+    return renderSouthIndian(chart, { signIndexFn: VD.navamsaIndexFromLongitude, centerLabel: "நவாம்சம்" });
+  }
+  function renderNorthIndianNavamsa(chart) {
+    return renderNorthIndian(chart, { signIndexFn: VD.navamsaIndexFromLongitude, centerLabel: "நவாம்சம்" });
+  }
+
   global.ChartRender = {
     renderSouthIndian: renderSouthIndian,
     renderNorthIndian: renderNorthIndian,
-    groupByRashi: groupByRashi
+    renderSouthIndianNavamsa: renderSouthIndianNavamsa,
+    renderNorthIndianNavamsa: renderNorthIndianNavamsa,
+    groupByRashi: groupByRashi,
+    groupByNavamsa: groupByNavamsa
   };
 })(window);

@@ -194,46 +194,41 @@ input[readonly] {
 }
 .radio-pair label { display: flex; align-items: center; gap: 4px; font-weight: 500; color: #55492f; white-space: nowrap; }
 
-/* ---------- Place-of-birth autocomplete ---------- */
-.place-input-wrap { position: relative; }
-
-.place-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 40;
-  margin: 0;
-  padding: 6px;
-  list-style: none;
-  background: #fffdf8;
-  border: 1px solid #cbb98c;
-  border-radius: 8px;
-  box-shadow: 0 18px 36px -12px rgba(0,0,0,0.35);
-  max-height: min(300px, 50vh);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.place-option {
+/* ---------- Place-of-birth search ---------- */
+.place-input-wrap {
   display: flex;
-  align-items: baseline;
   gap: 8px;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  border-radius: 5px;
-  padding: 9px 10px;
-  cursor: pointer;
+  align-items: stretch;
+}
+.place-input-wrap input { flex: 1 1 auto; min-width: 0; }
+
+.btn-search {
+  flex: 0 0 auto;
   font-family: var(--body);
-  color: var(--ink-on-parchment);
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0 20px;
+  border: 1px solid var(--rose);
+  border-radius: 4px;
+  background: var(--rose);
+  color: #fdf3ea;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease;
 }
-.place-option:hover, .place-option:focus-visible, .place-option.is-active {
-  background: #f0e4c4;
+.btn-search:hover { background: #9a4530; }
+.btn-search:active { transform: translateY(1px); }
+
+.place-error {
+  background: #fbe4de;
+  border: 1px solid var(--rose);
+  color: #7a2c1a;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+  line-height: 1.5;
 }
-.place-ta { font-weight: 600; font-size: 0.95rem; }
-.place-en { font-size: 0.78rem; color: #8a7c58; font-family: var(--mono); }
-.place-empty { padding: 10px; color: #8a7c58; font-size: 0.85rem; }
 
 .place-resolved {
   font-size: 0.85rem;
@@ -278,11 +273,10 @@ input[readonly] {
   flex-wrap: wrap;
   gap: 16px 20px;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 24px;
+  align-items: center;
+  margin-bottom: 20px;
 }
-.result-head h2 { margin-bottom: 6px; font-size: clamp(1.25rem, 4.5vw, 1.7rem); }
-.result-meta { color: #6b6250; font-size: 0.85rem; margin: 0; font-family: var(--mono); line-height: 1.5; }
+.result-head h2 { margin: 0; font-size: clamp(1.25rem, 4.5vw, 1.7rem); }
 
 .style-toggle {
   display: flex;
@@ -306,14 +300,50 @@ input[readonly] {
   color: #fdf3ea;
 }
 
+/* Birth-details definition table (பெயர், பிறந்த நாள் ...) */
+.details-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin-bottom: 8px; }
+.details-table th, .details-table td {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid #e8dcb8;
+  vertical-align: top;
+  white-space: normal;
+}
+.details-table th {
+  width: 40%;
+  font-family: var(--body);
+  font-weight: 700;
+  color: #6b6250;
+  white-space: nowrap;
+}
+.details-table td { font-weight: 500; }
+@media (max-width: 480px) {
+  .details-table th { width: 46%; }
+}
+
+.charts-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  margin: 20px 0 8px;
+}
 .chart-frame {
   display: flex;
-  justify-content: center;
-  margin: 8px 0 28px;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 320px;
+  max-width: 400px;
+}
+.chart-caption {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  color: var(--rose);
+  margin: 0 0 8px;
 }
 .chart-host {
-  width: min(440px, 100%);
-  max-width: 100%;
+  width: 100%;
+  max-width: 400px;
 }
 .chart-svg { width: 100%; height: auto; display: block; }
 
@@ -347,7 +377,8 @@ input[readonly] {
 }
 
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -2px; }
-table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 0.92rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+#planet-table { min-width: 480px; }
 th, td {
   text-align: left;
   padding: 10px 12px;
@@ -361,7 +392,7 @@ th {
   letter-spacing: 0.06em;
   color: #8a7c58;
 }
-td:nth-child(3) { font-family: var(--mono); }
+td:nth-child(2) { font-family: var(--mono); }
 @media (max-width: 480px) {
   table { font-size: 0.85rem; }
   th, td { padding: 8px 10px; }
